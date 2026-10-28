@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Portfolio</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main class="stage" id="stage">
+  <div class="camera" id="camera">
+    <img src="Image.png" alt="Illustrated desk with a designer, a monitor and sticky notes" id="scene">
+
+    <!-- clickable objects (they only work after the tour, when everything is closed) -->
+    <button class="hot h-girl" id="hitGirl" data-label="Intro" aria-label="Open the introduction"></button>
+    <button class="hot h-frame" id="hitFrame" data-label="About me" aria-label="Open about me"></button>
+    <button class="hot h-notes" id="hitNotes" data-label="Skills" aria-label="Open skills"></button>
+    <button class="hot h-books" id="hitBooks" data-label="Certificates" aria-label="Open certificates"></button>
+    <button class="hot h-monitor" id="hitMonitor" data-label="Projects" aria-label="Open projects"></button>
+
+    <!-- intro notification -->
+    <section class="bubble" id="intro" role="dialog" aria-labelledby="intro-title">
+      <div class="card">
+        <div class="meta">
+          <span class="appicon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4 3.5V17H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/></svg>
+          </span>
+          <span class="appname">Intro</span>
+          <span class="time">now</span>
+          <button class="close" id="close" aria-label="Close introduction">&times;</button>
+        </div>
+        <h1 id="intro-title"></h1>
+        <p class="role" id="intro-role"></p>
+        <p id="intro-text"></p>
+      </div>
+    </section>
+
+    <!-- about notification, beside the photo frame on the shelf -->
+    <section class="bubble about" id="about" role="dialog" aria-labelledby="a-title">
+      <div class="card">
+        <div class="meta">
+          <span class="appicon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg>
+          </span>
+          <span class="appname">About</span>
+          <span class="time">now</span>
+          <button class="close" id="closeAbout" aria-label="Close about">&times;</button>
+        </div>
+        <h1 id="a-title"></h1>
+        <p class="role" id="a-role"></p>
+        <p id="a-note"></p>
+        <div class="eduwrap" id="eduwrap">
+          <div class="edulabel">Education</div>
+          <div id="edulist"></div>
+          <div class="tags" id="tags"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- skills notification, beside the sticky notes -->
+    <section class="bubble skills" id="skills" role="dialog" aria-labelledby="s-title">
+      <div class="card">
+        <div class="meta">
+          <span class="appicon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z"/></svg>
+          </span>
+          <span class="appname">Skills</span>
+          <span class="time">now</span>
+          <button class="close" id="closeSkills" aria-label="Close skills">&times;</button>
+        </div>
+        <h1 id="s-title">My skills</h1>
+        <div class="chips" id="chips"></div>
+      </div>
+    </section>
+
+    <!-- certificates notification, above the books on the desk -->
+    <section class="bubble books" id="books" role="dialog" aria-labelledby="b-title">
+      <div class="card">
+        <div class="meta">
+          <span class="appicon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 14L7 21l5-3 5 3-1.5-7"/></svg>
+          </span>
+          <span class="appname">Learning</span>
+          <span class="time">now</span>
+          <button class="close" id="closeBooks" aria-label="Close certificates">&times;</button>
+        </div>
+        <h1 id="b-title"></h1>
+        <p class="role" id="b-role"></p>
+        <div class="certs" id="certs"></div>
+      </div>
+    </section>
+
+    <!-- contact notification, beside the phone -->
+    <section class="bubble talk" id="talk" role="dialog" aria-labelledby="t-title">
+      <div class="card">
+        <div class="meta">
+          <span class="appicon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+          </span>
+          <span class="appname">Contact</span>
+          <span class="time">now</span>
+          <button class="close" id="closeTalk" aria-label="Close contact">&times;</button>
+        </div>
+        <h1 id="t-title"></h1>
+        <p class="role" id="t-role"></p>
+        <div class="tlinks" id="tlinks"></div>
+      </div>
+    </section>
+
+    <!-- project pictures on the monitor screen (slides are added by the script) -->
+    <div class="screen" id="screen"></div>
+
+    <!-- arrows beside the monitor -->
+    <button class="arrow left" id="prev" aria-label="Previous project">
+      <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <button class="arrow right" id="next" aria-label="Next project">
+      <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+    </button>
+
+    <!-- project card above the monitor -->
+    <div class="pcard" id="pcard">
+      <div class="plabel" id="p-label"></div>
+      <div class="ptitle" id="p-title"></div>
+      <button class="close" id="closeMonitor" aria-label="Back to the desk">&times;</button>
+    </div>
+
+    <!-- the phone on its little stand -->
+    <button class="phone" id="phone" aria-label="Let's talk">
+      <span class="p-shadow"></span>
+      <span class="p-body">
+        <span class="p-notch"></span>
+        <span class="p-screen">
+          <span class="p-bar"><i class="av"></i><b>Vani</b><em></em></span>
+          <span class="p-msgs">
+            <span class="m in">Nice work!</span>
+            <span class="m out">Let’s talk!</span>
+            <span class="typing"><i></i><i></i><i></i></span>
+          </span>
+        </span>
+      </span>
+      <span class="p-stand"></span>
+      <span class="p-bubble">Let’s talk</span>
+    </button>
+
+    <!-- icons on the sticky notes (added by the script) -->
+    <div class="notes" id="notes"></div>
+  </div>
+
+  <!-- hint shown when the tour is over -->
+  <div class="freehint" id="freehint">Click any object on the desk to open it</div>
+</main>
+
+<script>
+  /* ====== EDIT YOUR DETAILS HERE ====== */
+  const PROFILE = {
+    name: "Vani",
+    role: "UX/UI Designer",
+    intro: "I design experiences people love to use, and I can code them too."
+  };
+
+  /* The About note (the frame on the shelf). Delete a line you don't need. */
+  const ABOUT = {
+    title: "About me",
+    role: "CS student turned designer",
+    note: "Code taught me how products work. Design taught me how they should feel.",
+    education: [
+      { degree: "BCA", place: "Maharani Cluster University", years: "2021 - 2024" },
+      { degree: "MCA", place: "Atria Institute of Technology", years: "2024 - 2026" }
+    ],
+    tags: []
+  };
+
+  /* The Certificates note (the books on the desk).
+     "url" is the certificate link. Leave it as "" and the row is not clickable. */
+  const CERTS = {
+    title: "Certificates",
+    role: "Always learning",
+    items: [
+      { name: "Google UX Design", by: "Coursera", url: "https://www.coursera.org/account/accomplishments/specialization/I1FS4H9P3UCJ?utm_source=link&utm_medium=certificate&utm_content=cert_image&utm_campaign=sharing_cta&utm_product=prof" },
+      { name: "Figma UI/UX Design", by: "Udemy", url: "" }
+    ]
+  };
+
+  /* Your projects. Put the pictures in the same folder as index.html (1600 x 900 px). */
+ /* Your projects. Put the pictures in the same folder as index.html. */
+const PROJECTS = [
+  {
+    title: "Petalyn",
+    tag: "UX/UI case study",
+    img: "project1.jpg",
+    url: "https://www.behance.net/gallery/257728075/Petalyn-Skincare-App-UIUX-Case-Study"
+  },
+  {
+    title: "Splito",
+    tag: "UX/UI case study",
+    img: "project2.jpg",
+    url: "https://www.behance.net/vaniachar"
+  },
+{
+  title: "Project 3",
+  tag: "UI design",
+  img: "project3.png",
+  url: "https://www.behance.net/gallery/253975265/Faint-Bloom-Art-Gallery-Website-Design"
+},
+{
+  title: "Project 4",
+  tag: "UI design",
+  img: "project4.png",
+  url: "https://www.behance.net/gallery/253640769/TWIRL-Fashion-E-commerce-Website-Design"
+}
+];
+  /* The "Let's talk" note (the phone on the desk). Add or remove links as you like.
+     "short" is the little badge letter(s) shown in the green square. */
+  const CONTACT = {
+    title: "Let's talk",
+    role: "Open to new opportunities",
+    links: [
+      { name: "LinkedIn", short: "in", url: "https://www.linkedin.com/in/vani-ms-89b4342b6/" },
+      { name: "Behance",  short: "Be", url: "https://www.behance.net/vaniachar" },
+      { name: "Resume",   icon: "file",  wide: true, url: "https://drive.google.com/file/d/1zxAZlEbnvfuBqHAFh0TGOG_MoVPRu2k_/view?usp=drivesdk" },
+      { name: "90087 27624", icon: "phone", wide: true, url: "tel:+919008727624" }   /* tapping it calls on a phone */
+      /* to add your email: { name: "Email", icon: "mail", url: "mailto:you@example.com" } */
+    ]
+  };
+
+  /* One entry per sticky note (x, y = where the note is on the picture, in %).
+     icon options: figma, research, flow, system, proto, code, js, test */
+  const SKILLS = [
+    { name: "Figma",           tag: "Design tool", icon: "figma",    x: 50.7, y: 21.5 },
+    { name: "UX research",     tag: "Research",    icon: "research", x: 54.9, y: 21.9 },
+    { name: "Wireframing",     tag: "UX",          icon: "flow",     x: 59.3, y: 21.5 },
+    { name: "Design systems",  tag: "UI",          icon: "system",   x: 63.4, y: 21.1 },
+    { name: "Prototyping",     tag: "Interaction", icon: "proto",    x: 51.2, y: 28.8 },
+    { name: "HTML & CSS",      tag: "Code",        icon: "code",     x: 55.6, y: 28.9 },
+    { name: "JavaScript",      tag: "Code",        icon: "js",       x: 60.0, y: 28.7 },
+    { name: "User testing",    tag: "Research",    icon: "test",     x: 64.5, y: 28.4 }
+  ];
+
+  const TIMING = {
+    holdMs: 500,         /* full picture stays this long before zooming */
+    zoom: 1.2,           /* zoom on the girl */
+    zoomMs: 600,         /* zoom duration */
+    popAfterMs: 300,     /* intro appears this long after the zoom starts */
+    typeSpeedMs: 12,     /* time per letter: lower = faster */
+    aboutDelayMs: 400,   /* pause after the intro, before moving to the frame */
+    aboutMoveMs: 450,    /* speed of the move to the frame */
+    aboutZoom: 1.5,      /* zoom when showing the frame */
+    aboutHoldMs: 1300,   /* how long the About note stays before moving to the skills */
+    skillsMoveMs: 300,   /* speed of the move to the sticky notes */
+    skillsZoom: 1.3,     /* zoom when showing the skills */
+    skillsHoldMs: 2000,  /* how long the skills stay before moving to the books */
+    booksMoveMs: 450,    /* speed of the move to the books */
+    booksZoom: 2.2,      /* zoom when showing the books */
+    booksHoldMs: 3000,   /* how long the certificates stay before moving to the monitor */
+    monitorMoveMs: 350,  /* speed of the move to the monitor (and back to the full desk) */
+    monitorZoom: 2.0,    /* zoom on the monitor */
+    talkMoveMs: 450,     /* speed of the move to the phone */
+    talkZoom: 2.2,       /* zoom on the phone */
+    hintMs: 6000         /* how long the "click any object" hint stays */
+  };
+  const ABOUT_VIEW = { x: 46, y: 24 };  /* the point the camera centres on for the frame (in %) */
+  const BOOKS_VIEW = { x: 50, y: 43 };  /* the point the camera centres on for the books (in %) */
+  const MONITOR = { x: 59.4, y: 40 };   /* the point the camera centres on for the monitor (in %) */
+  const TALK_VIEW = { x: 72, y: 49 };   /* the point the camera centres on for the phone (in %) */
+  /* ==================================== */
+
+  const ICONS = {
+    figma: '<path d="M8.5 2H12v6.5H8.5a3.25 3.25 0 0 1 0-6.5z"/><path d="M12 2h3.5a3.25 3.25 0 0 1 0 6.5H12z"/><path d="M8.5 8.5H12V15H8.5a3.25 3.25 0 0 1 0-6.5z"/><circle cx="15.25" cy="11.75" r="3.25"/><circle cx="8.75" cy="18.25" r="3.25"/>',
+    research: '<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/>',
+    flow: '<rect x="3" y="3" width="7" height="6" rx="1"/><rect x="14" y="15" width="7" height="6" rx="1"/><path d="M10 6h4a3 3 0 0 1 3 3v6"/>',
+    system: '<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="3.5"/>',
+    proto: '<path d="M5 3l14 7-6 2-2 6z"/>',
+    code: '<path d="M8 7l-5 5 5 5"/><path d="M16 7l5 5-5 5"/><path d="M13.5 5l-3 14"/>',
+    js: '<path d="M9 4H8a2 2 0 0 0-2 2v3a2 2 0 0 1-2 2 2 2 0 0 1 2 2v3a2 2 0 0 0 2 2h1"/><path d="M15 4h1a2 2 0 0 1 2 2v3a2 2 0 0 0 2 2 2 2 0 0 0-2 2v3a2 2 0 0 1-2 2h-1"/>',
+    test: '<path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    cap: '<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5v4.5c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v6"/>',
+    badge: '<circle cx="12" cy="9" r="5.5"/><path d="M8.5 14L7 21l5-3 5 3-1.5-7"/>',
+    out: '<path d="M7 17L17 7M9 7h8v8"/>',
+    file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>',
+    phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
+    mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>'
+  };
+  const svg = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>`;
+
+  const $ = (id) => document.getElementById(id);
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const camera = $("camera"), intro = $("intro"), aboutCard = $("about"), skillsCard = $("skills"), booksCard = $("books"), talkCard = $("talk"), notesEl = $("notes");
+  const screenEl = $("screen"), pcard = $("pcard"), prevBtn = $("prev"), nextBtn = $("next"), phone = $("phone"), hint = $("freehint");
+  const eduWrap = $("eduwrap"), certsEl = $("certs"), tlinksEl = $("tlinks");
+  const hots = [$("hitGirl"), $("hitFrame"), $("hitNotes"), $("hitBooks"), $("hitMonitor")];
+  const monitorUI = [screenEl, pcard, prevBtn, nextBtn];
+
+  /* camera speed, and the two ways of aiming it */
+  const moveTo = (ms) => { camera.style.transition = `transform ${ms}ms cubic-bezier(.65,0,.35,1)`; };
+  moveTo(TIMING.zoomMs);
+  /* keep the point (fx, fy in %) in place while the picture scales; pull = drift towards the centre */
+  function zoomTo(fx, fy, s, pull = 0) {
+    const clamp = (v) => Math.min(0, Math.max((1 - s) * 100, v));
+    const tx = clamp(fx * (1 - s) + (50 - fx) * pull);
+    const ty = clamp(fy * (1 - s) + (50 - fy) * pull);
+    camera.style.transform = `translate(${tx}%, ${ty}%) scale(${s})`;
+  }
+  /* bring the point (cx, cy in %) to the middle of the screen */
+  function zoomCenter(cx, cy, s) {
+    const clamp = (v) => Math.min(0, Math.max((1 - s) * 100, v));
+    camera.style.transform = `translate(${clamp(50 - cx * s)}%, ${clamp(50 - cy * s)}%) scale(${s})`;
+  }
+
+  /* typing: text not typed yet stays invisible, so the card never changes size */
+  function prep(el, text) {
+    el.textContent = "";
+    const typed = document.createElement("span"), rest = document.createElement("span");
+    rest.className = "rest"; rest.textContent = text;
+    el.append(typed, rest);
+    return { el, text, typed, rest };
+  }
+  const cursor = document.createElement("span");
+  cursor.className = "cursor";
+  function resetLines(list) { list.forEach((l) => { l.typed.textContent = ""; l.rest.textContent = l.text; }); }
+  async function typeLines(list, alive) {
+    resetLines(list);                       /* so every opening types from the start */
+    for (const l of list) {
+      l.el.insertBefore(cursor, l.rest);
+      for (let i = 1; i <= l.text.length; i++) {
+        if (!alive()) return false;
+        l.typed.textContent = l.text.slice(0, i);
+        l.rest.textContent = l.text.slice(i);
+        await sleep(TIMING.typeSpeedMs + (/[.,]/.test(l.text[i - 1]) ? 150 : 0));
+      }
+      await sleep(250);
+    }
+    return true;
+  }
+
+  /* icons on the sticky notes + the list inside the skills notification */
+  const chipsEl = $("chips");
+  SKILLS.forEach((s, i) => {
+    const b = document.createElement("button");
+    b.className = "note";
+    b.style.cssText = `left:${s.x}%;top:${s.y}%`;
+    b.setAttribute("aria-label", s.name);
+    b.innerHTML = svg(s.icon) + `<span class="label">${s.name}</span>`;
+    b.addEventListener("click", () => pickSkill(i));
+    notesEl.append(b);
+
+    const c = document.createElement("div");
+    c.className = "chip";
+    c.style.setProperty("--i", i);
+    c.innerHTML = `<span class="chipicon">${svg(s.icon)}</span><span class="chiptxt"><b>${s.name}</b><small>${s.tag}</small></span>`;
+    chipsEl.append(c);
+  });
+  const chips = [...chipsEl.children];
+  const setChip = (i) => chips.forEach((c, k) => c.classList.toggle("current", k === i));
+
+  /* education + tags inside the About note */
+  ABOUT.education.forEach((e, i) => {
+    const r = document.createElement("div");
+    r.className = "edu";
+    r.style.setProperty("--i", i);
+    r.innerHTML = `<span class="chipicon">${svg("cap")}</span><span class="chiptxt"><b>${e.degree}</b><small>${e.place} · ${e.years}</small></span>`;
+    $("edulist").append(r);
+  });
+  ABOUT.tags.forEach((t, i) => {
+    const s = document.createElement("span");
+    s.className = "tag";
+    s.style.setProperty("--i", ABOUT.education.length + i);
+    s.textContent = t;
+    $("tags").append(s);
+  });
+
+  /* certificate rows (a row is a link only if it has a url) */
+  CERTS.items.forEach((c, i) => {
+    const el = document.createElement(c.url ? "a" : "div");
+    el.className = "cert" + (c.url ? " link" : "");
+    if (c.url) { el.href = c.url; el.target = "_blank"; el.rel = "noopener"; }
+    el.style.setProperty("--i", i);
+    el.innerHTML = `<span class="chipicon">${svg("badge")}</span><span class="chiptxt"><b>${c.name}</b><small>${c.by}</small></span>${c.url ? svg("out") : ""}`;
+    certsEl.append(el);
+  });
+
+  /* links inside the contact note */
+  CONTACT.links.forEach((l, i) => {
+    const a = document.createElement("a");
+    a.className = "tlink" + (l.wide ? " wide" : "");
+    a.href = l.url;
+    if (/^https?:/.test(l.url)) { a.target = "_blank"; a.rel = "noopener"; }   /* web links open in a new tab; tel: and mailto: do not */
+    a.style.setProperty("--i", i);
+    a.innerHTML = `<span class="chipicon">${l.icon ? svg(l.icon) : l.short}</span><span class="tname">${l.name}</span>${l.icon === "phone" || l.icon === "mail" ? "" : svg("out")}`;
+    tlinksEl.append(a);
+  });
+
+  /* ===== projects on the monitor ===== */
+  const slides = PROJECTS.map((p) => {
+    const s = document.createElement("div");
+    s.className = "slide";
+    const ph = document.createElement("span");
+    ph.className = "ph"; ph.textContent = p.title;
+ const im = document.createElement("img");
+im.alt = p.title;
+im.loading = "eager";
+im.decoding = "async";
+im.src = p.img;
+    im.addEventListener("error", () => im.remove());   /* no picture yet: the placeholder stays */
+    s.append(ph, im);
+    screenEl.append(s);
+    return s;
+  });
+  let idx = 0;
+  slides[0].classList.add("active");
+
+  function updateCard() {
+    const p = PROJECTS[idx];
+    $("p-label").textContent = `${p.tag} · ${idx + 1}/${PROJECTS.length}`;
+    $("p-title").textContent = p.title;
+    pcard.classList.remove("swap"); void pcard.offsetWidth; pcard.classList.add("swap");
+  }
+  function showProject(i, dir) {
+    if (i === idx) return;
+    const cur = slides[idx], nxt = slides[i];
+    nxt.style.transition = "none";
+    nxt.style.setProperty("--shift", dir * 8 + "%");
+    void nxt.offsetWidth;                     /* start the new picture just off to the side */
+    nxt.style.transition = "";
+    cur.style.setProperty("--shift", -dir * 8 + "%");
+    cur.classList.remove("active");
+    nxt.style.setProperty("--shift", "0%");
+    nxt.classList.add("active");
+    idx = i;
+    updateCard();
+  }
+  const n = PROJECTS.length;
+  const goPrev = () => showProject((idx - 1 + n) % n, -1);
+  const goNext = () => showProject((idx + 1) % n, 1);
+  prevBtn.addEventListener("click", goPrev);
+  nextBtn.addEventListener("click", goNext);
+  updateCard();
+
+  /* clicking a project picture opens its page in a new tab */
+  slides.forEach((s, i) => {
+    const url = PROJECTS[i].url;
+    if (!url) return;
+    s.classList.add("link");
+    s.setAttribute("role", "link");
+    s.setAttribute("tabindex", "0");
+    s.setAttribute("aria-label", "Open " + PROJECTS[i].title + " project");
+    const open = () => window.open(url, "_blank", "noopener");
+    s.addEventListener("click", open);
+    s.addEventListener("keydown", (e) => { if (e.key === "Enter") open(); });
+  });
+
+  /* ===== the views =====
+     Every section is one "view". The tour plays them in order (tour = true);
+     after the tour, clicking an object plays just that one view (tour = false). */
+  const lines = [
+    prep($("intro-title"), "Hi, I’m " + PROFILE.name),
+    prep($("intro-role"), PROFILE.role),
+    prep($("intro-text"), PROFILE.intro)
+  ];
+  const aboutLines = [prep($("a-title"), ABOUT.title), prep($("a-role"), ABOUT.role), prep($("a-note"), ABOUT.note)];
+  const booksLines = [prep($("b-title"), CERTS.title), prep($("b-role"), CERTS.role)];
+  const talkLines  = [prep($("t-title"), CONTACT.title), prep($("t-role"), CONTACT.role)];
+
+  let token = 0;          /* changes whenever a new view starts, which cancels anything still running */
+  let view = null;        /* which view is open: intro, about, skills, books, monitor, talk (null = full desk) */
+  let viewTour = true;    /* is this view part of the tour? */
+  let mode = "tour";      /* "tour" until the tour ends, then "free" */
+  let timer = null, hintTimer = null;
+
+  function hideAll() {
+    clearTimeout(timer); clearTimeout(hintTimer);
+    cursor.remove();
+    [intro, aboutCard, skillsCard, booksCard, talkCard].forEach((c) => c.classList.remove("open"));
+    eduWrap.classList.remove("show"); certsEl.classList.remove("show"); tlinksEl.classList.remove("show");
+    notesEl.classList.remove("on");
+    monitorUI.forEach((e) => e.classList.remove("show"));
+    camera.classList.remove("talk-on");
+    phone.classList.remove("ping", "free");
+    hots.forEach((h) => h.classList.remove("on"));
+    hint.classList.remove("show");
+  }
+  function begin(name, tour) { hideAll(); view = name; viewTour = tour; return ++token; }
+
+  /* back to the full desk: every object becomes clickable */
+  function enterFree() {
+    hideAll(); token++; view = null; viewTour = false; mode = "free";
+    moveTo(TIMING.monitorMoveMs);
+    camera.style.transform = "translate(0%, 0%) scale(1)";
+    hots.forEach((h) => h.classList.add("on"));
+    phone.classList.add("free");
+    hint.classList.add("show");
+    hintTimer = setTimeout(() => hint.classList.remove("show"), TIMING.hintMs);
+  }
+
+  /* intro: zoom on the girl, type the introduction */
+  async function viewIntro(tour) {
+    const my = begin("intro", tour);
+    moveTo(TIMING.zoomMs);
+    zoomTo(43, 58, TIMING.zoom);
+    await sleep(TIMING.popAfterMs); if (my !== token) return;
+    intro.classList.add("open");
+    await sleep(250); if (my !== token) return;
+    const done = await typeLines(lines, () => my === token);
+    cursor.remove();
+    if (done && tour) { await sleep(TIMING.aboutDelayMs); if (my === token) viewAbout(true); }
+  }
+
+  /* about: glide to the frame, type the note, then show education */
+  async function viewAbout(tour) {
+    const my = begin("about", tour);
+    moveTo(TIMING.aboutMoveMs);
+    zoomCenter(ABOUT_VIEW.x, ABOUT_VIEW.y, TIMING.aboutZoom);
+    await sleep(TIMING.aboutMoveMs); if (my !== token) return;
+    aboutCard.classList.add("open");
+    await sleep(300); if (my !== token) return;
+    const done = await typeLines(aboutLines, () => my === token);
+    cursor.remove();
+    if (!done) return;
+    eduWrap.classList.add("show");
+    if (tour) timer = setTimeout(() => { if (my === token) viewSkills(true); }, TIMING.aboutHoldMs);
+  }
+
+  /* skills: glide to the sticky notes, show the icons, pop up the skills notification */
+  async function viewSkills(tour) {
+    const my = begin("skills", tour);
+    moveTo(TIMING.skillsMoveMs);
+    zoomCenter(68, 26, TIMING.skillsZoom);
+    await sleep(TIMING.skillsMoveMs); if (my !== token) return;
+    notesEl.classList.add("on");
+    await sleep(250); if (my !== token) return;
+    setChip(-1);
+    skillsCard.classList.add("open");
+    if (tour) timer = setTimeout(() => { if (my === token) viewBooks(true); }, TIMING.skillsHoldMs);
+  }
+  function pickSkill(i) {                   /* a sticky-note icon was clicked */
+    if (view !== "skills") return;
+    clearTimeout(timer);                    /* someone is exploring: stay here until they close it */
+    setChip(i);
+    skillsCard.classList.add("open");
+  }
+
+  /* books: glide to the books, type the title, show the certificates */
+  async function viewBooks(tour) {
+    const my = begin("books", tour);
+    moveTo(TIMING.booksMoveMs);
+    zoomCenter(BOOKS_VIEW.x, BOOKS_VIEW.y, TIMING.booksZoom);
+    await sleep(TIMING.booksMoveMs); if (my !== token) return;
+    booksCard.classList.add("open");
+    await sleep(300); if (my !== token) return;
+    const done = await typeLines(booksLines, () => my === token);
+    cursor.remove();
+    if (!done) return;
+    certsEl.classList.add("show");
+    if (tour) timer = setTimeout(() => { if (my === token) viewMonitor(true); }, TIMING.booksHoldMs);
+  }
+
+  /* monitor: glide to the monitor, show the project picture, arrows and card; the phone starts buzzing */
+  async function viewMonitor(tour) {
+    const my = begin("monitor", tour);
+    moveTo(TIMING.monitorMoveMs);
+    zoomCenter(MONITOR.x, MONITOR.y, TIMING.monitorZoom);
+    await sleep(TIMING.monitorMoveMs); if (my !== token) return;
+    monitorUI.forEach((e) => e.classList.add("show"));
+    phone.classList.add("ping");
+  }
+
+  /* talk: glide to the phone, play the chat, pop up "Let's talk" */
+  async function viewTalk(tour) {
+    const my = begin("talk", tour);
+    moveTo(TIMING.talkMoveMs);
+    zoomCenter(TALK_VIEW.x, TALK_VIEW.y, TIMING.talkZoom);
+    await sleep(TIMING.talkMoveMs - 100); if (my !== token) return;
+    camera.classList.add("talk-on");
+    await sleep(600); if (my !== token) return;
+    talkCard.classList.add("open");
+    await sleep(300); if (my !== token) return;
+    const done = await typeLines(talkLines, () => my === token);
+    cursor.remove();
+    if (done) tlinksEl.classList.add("show");
+  }
+
+  /* closing a view: in the tour it moves to the next one; otherwise it goes back to the full desk */
+  function leave() {
+    if (viewTour) {
+      if (view === "intro")  return viewAbout(true);
+      if (view === "about")  return viewSkills(true);
+      if (view === "skills") return viewBooks(true);
+      if (view === "books")  return viewMonitor(true);
+    }
+    enterFree();
+  }
+  ["close", "closeAbout", "closeSkills", "closeBooks", "closeMonitor", "closeTalk"].forEach((id) => $(id).addEventListener("click", leave));
+
+  /* clicking the objects on the desk (only after the tour) */
+  const canOpen = () => mode === "free" && !view;
+  $("hitGirl").addEventListener("click", () => canOpen() && viewIntro(false));
+  $("hitFrame").addEventListener("click", () => canOpen() && viewAbout(false));
+  $("hitNotes").addEventListener("click", () => canOpen() && viewSkills(false));
+  $("hitBooks").addEventListener("click", () => canOpen() && viewBooks(false));
+  $("hitMonitor").addEventListener("click", () => canOpen() && viewMonitor(false));
+  phone.addEventListener("click", () => {
+    if (phone.classList.contains("ping") || phone.classList.contains("free")) viewTalk(false);
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (!view) return;
+    if (e.key === "Escape") leave();
+    else if (view === "monitor" && e.key === "ArrowLeft") goPrev();
+    else if (view === "monitor" && e.key === "ArrowRight") goNext();
+  });
+
+  /* start as soon as the picture has loaded */
+  async function playIntro() { await sleep(TIMING.holdMs); viewIntro(true); }
+  const scene = $("scene");
+  if (scene.complete) playIntro(); else scene.addEventListener("load", playIntro, { once: true });
+</script>
+</body>
+</html>

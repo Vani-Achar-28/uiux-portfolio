@@ -1,0 +1,572 @@
+:root {
+  --wall: #f3dccb;
+  --card: rgba(255, 244, 232, 0.94);
+  --ink: #243456;
+  --text: #4a4f66;
+  --gray: #8a6a58;
+  --green: #2f5a3f;
+  --ratio: 1.85;
+  --w: max(100vw, calc(100vh * var(--ratio)));
+  --h: max(100vh, calc(100vw / var(--ratio)));
+  --u: calc(var(--w) / 100);   /* 1u = 1% of picture width */
+}
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; overflow: hidden; background: var(--wall); }
+
+.stage {
+  position: absolute; left: 50%; top: 50%;
+  width: var(--w); height: var(--h);
+  transform: translate(-50%, -50%);
+  font-size: var(--u);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+.camera { position: absolute; inset: 0; transform-origin: 0 0; will-change: transform; }
+.camera > img#scene { width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; }
+
+/* ===== notifications ===== */
+.bubble {
+  z-index: 5;                       /* notifications always sit in front of the phone */
+  position: absolute; left: 14%; top: 32%; width: calc(var(--u) * 19);
+  opacity: 0; transform: translateX(calc(var(--u) * -2)) scale(0.95); pointer-events: none;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+.bubble.open {
+  opacity: 1; transform: none; pointer-events: auto;
+  transition: transform 0.3s cubic-bezier(.2, .9, .3, 1.15), opacity 0.2s ease;
+}
+.bubble.skills { left: 68%; top: 13%; width: calc(var(--u) * 24); transform: translateX(calc(var(--u) * 2)) scale(0.95); }
+.bubble.skills.open { transform: none; }
+
+.card {
+  padding: calc(var(--u) * 0.9) calc(var(--u) * 1.1) calc(var(--u) * 1.1);
+  border-radius: calc(var(--u) * 1.5);
+  background: var(--card);
+  -webkit-backdrop-filter: blur(calc(var(--u) * 1)) saturate(1.4);
+  backdrop-filter: blur(calc(var(--u) * 1)) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 calc(var(--u) * 0.7) calc(var(--u) * 2.2) rgba(120, 62, 30, 0.25);
+}
+.meta { display: flex; align-items: center; gap: calc(var(--u) * 0.55); margin-bottom: calc(var(--u) * 0.55); }
+.appicon {
+  display: grid; place-items: center;
+  width: calc(var(--u) * 1.9); height: calc(var(--u) * 1.9);
+  border-radius: calc(var(--u) * 0.5); background: var(--green);
+}
+.appicon svg { width: 65%; height: 65%; fill: none; stroke: #fff; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.appname, .time { font-size: calc(var(--u) * 0.8); color: var(--gray); }
+.appname { font-weight: 500; }
+.time { margin-left: auto; }
+.close {
+  width: calc(var(--u) * 1.6); height: calc(var(--u) * 1.6); border: 0; border-radius: 50%;
+  background: rgba(36, 52, 86, 0.08); color: var(--ink);
+  font-size: calc(var(--u) * 1.1); line-height: 1; cursor: pointer;
+}
+.close:hover { background: rgba(36, 52, 86, 0.16); }
+.close:focus-visible { outline: 2px solid var(--green); }
+
+.card h1 { font-size: calc(var(--u) * 1.15); font-weight: 600; line-height: 1.25; color: var(--ink); }
+.card .role { font-size: calc(var(--u) * 1); font-weight: 500; line-height: 1.35; color: var(--green); margin-top: calc(var(--u) * 0.15); }
+.card p:not(.role) { font-size: calc(var(--u) * 0.95); line-height: 1.4; color: var(--text); margin-top: calc(var(--u) * 0.15); }
+
+.rest { visibility: hidden; }
+.cursor {
+  display: inline-block; width: 0.1em; height: 1em; margin-left: 0.05em;
+  background: var(--ink); vertical-align: -0.12em; animation: blink 0.8s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ===== icons on the sticky notes ===== */
+.notes { position: absolute; inset: 0; pointer-events: none; }
+.note {
+  position: absolute; width: calc(var(--u) * 4.2); height: calc(var(--u) * 4.2);
+  transform: translate(-50%, -50%);
+  display: grid; place-items: center;
+  background: none; border: 0; border-radius: calc(var(--u) * 0.5);
+  cursor: pointer;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.5s ease, scale 0.2s ease, rotate 0.2s ease, translate 0.2s ease;
+}
+.notes.on .note { opacity: 1; pointer-events: auto; }
+.note svg {
+  width: calc(var(--u) * 2); height: calc(var(--u) * 2);
+  fill: none; stroke: var(--ink); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+  opacity: 0.88;
+}
+.note:hover, .note:focus-visible { scale: 1.1; rotate: -3deg; translate: 0 calc(var(--u) * -0.25); outline: none; }
+.note .label {
+  position: absolute; bottom: calc(100% + var(--u) * 0.1); left: 50%;
+  transform: translate(-50%, calc(var(--u) * 0.3));
+  background: var(--ink); color: #fff; white-space: nowrap;
+  padding: calc(var(--u) * 0.25) calc(var(--u) * 0.7); border-radius: calc(var(--u) * 1);
+  font-size: calc(var(--u) * 0.85); opacity: 0; pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.note:hover .label, .note:focus-visible .label { opacity: 1; transform: translate(-50%, 0); }
+
+/* ===== skills list inside the big notification ===== */
+.chips { display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--u) * 0.6); margin-top: calc(var(--u) * 0.8); }
+.chip {
+  display: flex; align-items: center; gap: calc(var(--u) * 0.6);
+  padding: calc(var(--u) * 0.5) calc(var(--u) * 0.6);
+  border-radius: calc(var(--u) * 1); background: rgba(36, 52, 86, 0.06);
+  border: calc(var(--u) * 0.12) solid transparent;
+}
+.chip.current { background: #fff; border-color: var(--ink); }
+.chipicon {
+  flex: none; display: grid; place-items: center;
+  width: calc(var(--u) * 2.1); height: calc(var(--u) * 2.1);
+  border-radius: calc(var(--u) * 0.6); background: var(--green);
+}
+.chipicon svg { width: 62%; height: 62%; fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.chiptxt b { display: block; font-size: calc(var(--u) * 0.85); font-weight: 600; color: var(--ink); line-height: 1.2; }
+.chiptxt small { font-size: calc(var(--u) * 0.7); color: var(--gray); }
+.skills.open .chip { animation: chipIn 0.4s ease both; animation-delay: calc(0.25s + var(--i) * 0.09s); }
+@keyframes chipIn { from { opacity: 0; transform: translateY(calc(var(--u) * 0.7)); } to { opacity: 1; transform: none; } }
+
+/* ===== monitor: project pictures on the screen ===== */
+.screen {
+  position: absolute; left: 53.6%; top: 36.5%; width: 11.6%; height: 12%;
+  overflow: hidden; background: #f1ede6; border-radius: calc(var(--u) * 0.15);
+  opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+}
+.screen.show { opacity: 1; }
+.slide {
+  position: absolute; inset: 0; opacity: 0;
+  transform: translateX(var(--shift, 0%));
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.slide.active { opacity: 1; }
+.slide .ph {      /* placeholder, visible until your picture is added */
+  position: absolute; inset: 0; display: grid; place-items: center; text-align: center;
+  padding: calc(var(--u) * 1);
+  background: linear-gradient(135deg, #dfe8d4, #f3dccb);
+  color: var(--ink); font-size: calc(var(--u) * 1.1); font-weight: 600;
+}
+.slide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* arrows on both sides of the monitor */
+.arrow {
+  position: absolute; top: 42.5%; width: calc(var(--u) * 2.2); height: calc(var(--u) * 2.2);
+  display: grid; place-items: center; border-radius: 50%;
+  background: var(--card); border: 1px solid rgba(255, 255, 255, 0.65); cursor: pointer;
+  box-shadow: 0 calc(var(--u) * 0.35) calc(var(--u) * 1.1) rgba(120, 62, 30, 0.25);
+  transform: translate(-50%, -50%) scale(0.8);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.25s ease, background 0.2s ease;
+}
+.arrow.left { left: 50.8%; }
+.arrow.right { left: 67.9%; }
+.arrow.show { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+.arrow.show:hover { background: #fff; transform: translate(-50%, -50%) scale(1.1); }
+.arrow:focus-visible { outline: 2px solid var(--green); }
+.arrow svg { width: 46%; height: 46%; fill: none; stroke: var(--ink); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* project card above the monitor: small, and its bottom edge stays just above the monitor frame */
+.pcard {
+  position: absolute; left: 59.4%; bottom: 65.4%; width: calc(var(--u) * 10.5);
+  padding: calc(var(--u) * 0.45) calc(var(--u) * 2.1) calc(var(--u) * 0.5) calc(var(--u) * 0.8);
+  border-radius: calc(var(--u) * 0.85);
+  background: var(--card);
+  -webkit-backdrop-filter: blur(calc(var(--u) * 1)) saturate(1.4);
+  backdrop-filter: blur(calc(var(--u) * 1)) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 calc(var(--u) * 0.4) calc(var(--u) * 1.4) rgba(120, 62, 30, 0.22);
+  transform: translate(-50%, calc(var(--u) * 0.5));
+  opacity: 0; pointer-events: none; transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.pcard.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.pcard .plabel { font-size: calc(var(--u) * 0.58); font-weight: 600; color: var(--green); }
+.pcard .ptitle { font-size: calc(var(--u) * 0.85); font-weight: 600; line-height: 1.2; color: var(--ink); margin-top: calc(var(--u) * 0.08); }
+.pcard.swap .plabel, .pcard.swap .ptitle { animation: swapIn 0.35s ease; }
+@keyframes swapIn { from { opacity: 0; transform: translateY(calc(var(--u) * 0.4)); } to { opacity: 1; transform: none; } }
+.pcard .close {
+  position: absolute; top: 50%; right: calc(var(--u) * 0.5); transform: translateY(-50%);
+  width: calc(var(--u) * 1.3); height: calc(var(--u) * 1.3); font-size: calc(var(--u) * 0.9);
+}
+
+/* click the monitor to open it again after closing */
+.monitor-hit {
+  position: absolute; left: 52.85%; top: 35.2%; width: 13%; height: 17.4%;
+  background: none; border: 0; cursor: pointer; pointer-events: none;
+}
+.monitor-hit.on { pointer-events: auto; }
+
+@media (max-width: 700px) {
+  :root { --u: calc(var(--w) / 100 * 1.9); }
+  .bubble { left: 3%; top: 8%; width: calc(var(--u) * 17); }
+  .bubble.skills { left: 4%; top: 6%; width: calc(var(--u) * 22); }
+}
+/* project picture is clickable: opens the full project in a new tab */
+.screen.show { pointer-events: auto; }
+.slide { pointer-events: none; }
+.slide.active.link { pointer-events: auto; cursor: pointer; }
+.slide.link img { transition: transform 0.35s ease, filter 0.2s ease; }
+.slide.link:hover img { transform: scale(1.03); filter: brightness(1.04); }
+.slide.link:focus-visible { outline: calc(var(--u) * 0.15) solid var(--green); outline-offset: calc(var(--u) * -0.15); }
+/* small round arrow that appears on hover */
+.slide.link::after {
+  content: "";
+  position: absolute; right: 2.5%; bottom: 5%;
+  width: calc(var(--u) * 0.95); height: calc(var(--u) * 0.95);
+  border-radius: 50%;
+  background: #f09770 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 17L17 7M9 7h8v8'/%3E%3C/svg%3E") center / 56% no-repeat;
+  box-shadow: 0 calc(var(--u) * 0.15) calc(var(--u) * 0.45) rgba(120, 62, 30, 0.3);
+  opacity: 0; transform: scale(0.7);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.slide.link:hover::after, .slide.link:focus-visible::after { opacity: 1; transform: scale(1); }
+
+/* =====================================================================
+   About + Education: two small notifications beside the photo frame.
+   The doodle arrows start AT the frame and point to each notification.
+   Size knob: change the 0.8 below (bigger number = bigger notifications).
+   ===================================================================== */
+.bubble.about {
+  --u: calc(var(--w) / 100 * 0.8);
+  left: 43%; top: 7%; width: calc(var(--u) * 19);
+  opacity: 1; transform: none;         /* the card inside fades in, so the arrow can come first */
+}
+.bubble.about .card, .bubble.talk .card {
+  position: relative;
+  opacity: 0; transform: translateX(calc(var(--u) * 2)) scale(0.92);
+  transition: opacity 0.2s ease, transform 0.25s ease;
+}
+.bubble.about.open .card, .bubble.talk.open .card {
+  opacity: 1; transform: none;
+  transition: opacity 0.2s ease 0.2s, transform 0.3s cubic-bezier(.2, .9, .3, 1.15) 0.2s;
+}
+.bubble.about .card h1, .bubble.talk .card h1 { font-size: calc(var(--u) * 1.1); }
+.bubble.about .card .role, .bubble.talk .card .role { font-size: calc(var(--u) * 0.9); }
+.bubble.about .card p:not(.role), .bubble.talk .card p:not(.role) { font-size: calc(var(--u) * 0.85); }
+
+/* ---- doodle arrows: start at the frame, point to the notification ---- */
+.bubble.about::before, .bubble.talk::before, .eduwrap::before {
+  content: ""; position: absolute; pointer-events: none;
+  width: calc(var(--u) * 7.5); height: calc(var(--u) * 5);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 60' fill='none' stroke='%23243456' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 52C14 22 44 6 82 14'/%3E%3Cpath d='M73.5 7L82 14L71.4 17'/%3E%3C/svg%3E") center / contain no-repeat;
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 0.2s ease;
+}
+/* About: arrow sits between the frame (left) and the card (right) */
+.bubble.about::before { right: calc(100% - var(--u) * 0.3); top: calc(var(--u) * 1.8); }
+/* Education: same arrow, mirrored, between the frame (right) and the card (left) */
+.eduwrap::before { left: calc(100% - var(--u) * 0.6); top: calc(var(--u) * 0.6); transform: scaleX(-1); }
+.bubble.about.open::before, .bubble.talk.open::before, .eduwrap.show::before { clip-path: inset(0); transition: clip-path 0.35s ease; }
+
+/* ---- Education notification, to the left of the frame ---- */
+.eduwrap {
+  position: absolute;
+  top: calc(var(--u) * 1.5);
+  right: calc(100% + var(--u) * 19.4);   /* moves it left/right: bigger number = further left */
+  width: calc(var(--u) * 15);
+  margin: 0;
+  padding: calc(var(--u) * 0.9) calc(var(--u) * 1.1) calc(var(--u) * 1.1);
+  border-radius: calc(var(--u) * 1.5);
+  background: var(--card);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 calc(var(--u) * 0.7) calc(var(--u) * 2.2) rgba(120, 62, 30, 0.25);
+  opacity: 0; transition: opacity 0.3s ease;
+}
+.eduwrap.show { opacity: 1; }
+
+/* header row, same look as the Intro header: icon, name, "now" */
+.edulabel {
+  display: flex; align-items: center; gap: calc(var(--u) * 0.55);
+  margin-bottom: calc(var(--u) * 0.55);
+  font-size: calc(var(--u) * 0.8); font-weight: 500; color: var(--gray);
+}
+.edulabel::before {
+  content: ""; flex: none;
+  width: calc(var(--u) * 1.9); height: calc(var(--u) * 1.9);
+  border-radius: calc(var(--u) * 0.5);
+  background: var(--green) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 9l10-5 10 5-10 5z'/%3E%3Cpath d='M6 11.5v4.5c0 1.5 3 3 6 3s6-1.5 6-3v-4.5'/%3E%3Cpath d='M22 9v6'/%3E%3C/svg%3E") center / 65% no-repeat;
+}
+.edulabel::after { content: "now"; margin-left: auto; font-weight: 400; }
+
+/* each degree: a slim row, no extra icon (the header already has one) */
+.edu {
+  display: block;
+  margin-top: calc(var(--u) * 0.4);
+  padding: calc(var(--u) * 0.45) calc(var(--u) * 0.7);
+  border-radius: calc(var(--u) * 0.9); background: rgba(36, 52, 86, 0.06);
+}
+.edu .chipicon { display: none; }
+.edu .chiptxt b { font-size: calc(var(--u) * 0.95); }
+.edu .chiptxt small { font-size: calc(var(--u) * 0.72); }
+.tags { display: flex; flex-wrap: wrap; gap: calc(var(--u) * 0.4); margin-top: calc(var(--u) * 0.6); }
+.tags:empty { display: none; }
+.tag {
+  padding: calc(var(--u) * 0.25) calc(var(--u) * 0.7); border-radius: 99px;
+  background: rgba(47, 90, 63, 0.1); color: var(--green);
+  font-size: calc(var(--u) * 0.75); font-weight: 500;
+}
+.eduwrap.show .edu, .eduwrap.show .tag { animation: chipIn 0.4s ease both; animation-delay: calc(0.1s + var(--i) * 0.1s); }
+
+@media (max-width: 700px) {
+  .bubble.about { --u: calc(var(--w) / 100 * 1.9 * 0.7); left: 4%; top: 6%; }
+  .bubble.about::before, .eduwrap::before { display: none; }
+  /* on a phone there is no room beside the frame, so Education sits under About */
+  .eduwrap { right: auto; left: 0; top: calc(100% + var(--u) * 0.8); width: 100%; }
+}
+
+/* =====================================================================
+   "Let's talk": small contact note beside the phone on the desk.
+   The doodle arrow starts at the phone and points to the note (mirrored, so it points left).
+   ===================================================================== */
+.bubble.talk {
+  --u: calc(var(--w) / 100 * 0.58);
+  left: 73.9%; top: 43%; width: calc(var(--u) * 19);
+  opacity: 1; transform: none;
+}
+.bubble.talk::before { right: calc(100% - var(--u) * 0.3); top: calc(var(--u) * 1.8); }   /* arrow runs from the phone (left) to the note */
+.tlinks { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: calc(var(--u) * 0.5); margin-top: calc(var(--u) * 0.8); opacity: 0; transition: opacity 0.3s ease; }
+.tlinks.show { opacity: 1; }
+.tlink {
+  display: flex; align-items: center; gap: calc(var(--u) * 0.5);
+  min-width: 0; padding: calc(var(--u) * 0.4) calc(var(--u) * 0.5);
+  border-radius: calc(var(--u) * 1); background: rgba(36, 52, 86, 0.06);
+  color: var(--ink); text-decoration: none;
+  font-size: calc(var(--u) * 0.8); font-weight: 600;
+  transition: background 0.2s ease, translate 0.2s ease;
+}
+.tlink:hover, .tlink:focus-visible { background: #fff; translate: 0 calc(var(--u) * -0.12); outline: none; }
+.tlink .chipicon { width: calc(var(--u) * 1.7); height: calc(var(--u) * 1.7); color: #fff; font-size: calc(var(--u) * 0.7); font-weight: 700; }
+.tlink.wide { grid-column: 1 / -1; }
+.tlink .chipicon svg { width: 62%; height: 62%; }
+.tlink .tname { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tlink > svg { flex: none; margin-left: auto; width: calc(var(--u) * 0.9); height: calc(var(--u) * 0.9); fill: none; stroke: var(--gray); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.tlinks.show .tlink { animation: chipIn 0.4s ease both; animation-delay: calc(0.05s + var(--i) * 0.1s); }
+
+/* =====================================================================
+   The phone: small, standing on a little terracotta stand (drawn with CSS).
+   It buzzes + shows a "Let's talk" bubble after the projects; tap it to open the note.
+   Position: change the 70% (left/right) and 56% (up/down) below to move it.
+   ===================================================================== */
+.phone {
+  position: absolute; left: calc(70% - var(--u) * 0.95); top: calc(56% - var(--u) * 3.9);
+  z-index: 1;                       /* stays behind every notification */
+  width: calc(var(--u) * 1.9); height: calc(var(--u) * 3.9);
+  padding: 0; border: 0; background: none; font: inherit; color: inherit;
+  pointer-events: none; cursor: default;
+}
+.phone.ping { pointer-events: auto; cursor: pointer; }
+.phone:focus-visible { outline: calc(var(--u) * 0.1) solid var(--green); outline-offset: calc(var(--u) * 0.3); }
+.p-shadow {
+  position: absolute; left: calc(var(--u) * -0.7); right: calc(var(--u) * -0.7); bottom: calc(var(--u) * -0.25); height: calc(var(--u) * 0.7);
+  background: radial-gradient(ellipse at center, rgba(90, 50, 25, 0.28), rgba(90, 50, 25, 0) 70%);
+}
+.p-body {
+  position: absolute; left: 0; right: 0; top: 0; height: calc(var(--u) * 3.5);
+  border-radius: calc(var(--u) * 0.38); background: #3a4054; transform-origin: 50% 100%;
+  box-shadow: inset 0 0 0 calc(var(--u) * 0.04) rgba(255, 255, 255, 0.1);
+}
+.phone.ping .p-body { animation: buzz 2.6s ease-in-out infinite; }
+.p-stand {
+  position: absolute; left: calc(var(--u) * -0.3); right: calc(var(--u) * -0.3); bottom: 0; height: calc(var(--u) * 0.55);
+  border-radius: calc(var(--u) * 0.25) calc(var(--u) * 0.25) calc(var(--u) * 0.15) calc(var(--u) * 0.15);
+  background: #d98857;
+  box-shadow: inset 0 calc(var(--u) * 0.07) 0 rgba(255, 255, 255, 0.28), inset 0 calc(var(--u) * -0.1) 0 rgba(120, 50, 20, 0.22);
+}
+.p-notch { position: absolute; z-index: 2; top: calc(var(--u) * 0.2); left: 50%; width: calc(var(--u) * 0.6); height: calc(var(--u) * 0.1); border-radius: 99px; background: #3a4054; transform: translateX(-50%); }
+.p-screen {
+  position: absolute; inset: calc(var(--u) * 0.13); border-radius: calc(var(--u) * 0.28); background: #fbf3e8; overflow: hidden;
+  display: flex; flex-direction: column; text-align: left;
+}
+.p-bar { display: flex; align-items: center; gap: calc(var(--u) * 0.14); padding: calc(var(--u) * 0.42) calc(var(--u) * 0.2) calc(var(--u) * 0.15); background: rgba(47, 90, 63, 0.12); font-size: calc(var(--u) * 0.22); color: var(--ink); }
+.p-bar b { font-weight: 600; }
+.p-bar .av { flex: none; width: calc(var(--u) * 0.38); height: calc(var(--u) * 0.38); border-radius: 50%; background: #e8894f; }
+.p-bar em { margin-left: auto; width: calc(var(--u) * 0.12); height: calc(var(--u) * 0.12); border-radius: 50%; background: #4aa56b; }
+.p-msgs { display: flex; flex-direction: column; gap: calc(var(--u) * 0.15); padding: calc(var(--u) * 0.2) calc(var(--u) * 0.18); }
+.m { max-width: 90%; padding: calc(var(--u) * 0.12) calc(var(--u) * 0.18); border-radius: calc(var(--u) * 0.24); font-size: calc(var(--u) * 0.24); line-height: 1.25; }
+.m.in { align-self: flex-start; background: rgba(36, 52, 86, 0.09); color: var(--ink); border-bottom-left-radius: calc(var(--u) * 0.05); }
+.m.out { align-self: flex-end; background: var(--green); color: #fff; border-bottom-right-radius: calc(var(--u) * 0.05); }
+.typing { align-self: flex-start; display: flex; gap: calc(var(--u) * 0.07); padding: calc(var(--u) * 0.14) calc(var(--u) * 0.18); border-radius: calc(var(--u) * 0.24); background: rgba(36, 52, 86, 0.09); }
+.typing i { width: calc(var(--u) * 0.09); height: calc(var(--u) * 0.09); border-radius: 50%; background: var(--gray); animation: typingDot 1s ease-in-out infinite; }
+.typing i:nth-child(2) { animation-delay: 0.15s; }
+.typing i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes typingDot { 0%, 80%, 100% { opacity: 0.3; transform: none; } 40% { opacity: 1; transform: translateY(calc(var(--u) * -0.06)); } }
+
+/* when the phone is opened, the chat plays message by message */
+.camera.talk-on .p-msgs > :nth-child(1) { animation: msgIn 0.35s ease 0.3s both; }
+.camera.talk-on .p-msgs > :nth-child(2) { animation: msgIn 0.35s ease 1.1s both; }
+.camera.talk-on .p-msgs > :nth-child(3) { animation: msgIn 0.35s ease 1.9s both; }
+@keyframes msgIn { from { opacity: 0; transform: translateY(calc(var(--u) * 0.2)) scale(0.92); } to { opacity: 1; transform: none; } }
+
+/* buzzing: a quick shake of the phone, then calm */
+@keyframes buzz { 0%, 22%, 100% { transform: none; } 3% { transform: rotate(-3deg); } 6% { transform: rotate(3deg); } 9% { transform: rotate(-2.5deg); } 12% { transform: rotate(2.5deg); } 15% { transform: rotate(-1.5deg); } 18% { transform: rotate(1deg); } }
+
+/* the "Let's talk" bubble above the phone: this is the button people click */
+.p-bubble {
+  position: absolute; left: 50%; bottom: calc(100% + var(--u) * 0.45);
+  white-space: nowrap; padding: calc(var(--u) * 0.26) calc(var(--u) * 0.75); border-radius: 99px;
+  background: var(--green); color: #fff; font-size: calc(var(--u) * 0.7); font-weight: 600;
+  box-shadow: 0 calc(var(--u) * 0.25) calc(var(--u) * 0.8) rgba(60, 30, 15, 0.28);
+  opacity: 0; transform: translateX(-50%) translateY(calc(var(--u) * 0.3)) scale(0.85); transform-origin: 50% 100%;
+  transition: opacity 0.3s ease, transform 0.3s ease; pointer-events: none;
+}
+.p-bubble::after {
+  content: ""; position: absolute; left: 50%; top: 100%; width: calc(var(--u) * 0.45); height: calc(var(--u) * 0.45);
+  background: var(--green); transform: translate(-50%, -60%) rotate(45deg); border-radius: calc(var(--u) * 0.08);
+}
+.phone.ping .p-bubble { opacity: 1; transform: translateX(-50%); pointer-events: auto; animation: bubbleBob 1.8s ease-in-out infinite; }
+@keyframes bubbleBob { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(calc(var(--u) * -0.25)); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .phone.ping .p-body, .phone.ping .p-bubble { animation: none; }
+}
+@media (max-width: 700px) {
+  .bubble.talk { --u: calc(var(--w) / 100 * 1.9 * 0.7); left: 4%; top: 6%; }
+  .bubble.talk::before { display: none; }
+}
+
+/* =====================================================================
+   Certificates: a small note ABOVE the books, with a small arrow pointing down at them.
+   Size knob: the 0.62. Move left/right: "left". Move up/down: "bottom".
+   ===================================================================== */
+.bubble.books {
+  --u: calc(var(--w) / 100 * 0.62);
+  left: 45.1%; top: auto; bottom: 56.9%; width: calc(var(--u) * 16);
+  opacity: 1; transform: none;
+}
+.bubble.books .card {
+  position: relative;
+  padding: calc(var(--u) * 0.8) calc(var(--u) * 1) calc(var(--u) * 0.9);
+  border-radius: calc(var(--u) * 1.3);
+  opacity: 0; transform: translateY(calc(var(--u) * 0.8)) scale(0.94);
+  transition: opacity 0.2s ease, transform 0.25s ease;
+}
+.bubble.books.open .card {
+  opacity: 1; transform: none;
+  transition: opacity 0.2s ease 0.15s, transform 0.3s cubic-bezier(.2, .9, .3, 1.15) 0.15s;
+}
+.bubble.books .meta { margin-bottom: calc(var(--u) * 0.4); }
+.bubble.books .appicon { width: calc(var(--u) * 1.7); height: calc(var(--u) * 1.7); }
+.bubble.books .card h1 { font-size: calc(var(--u) * 1.15); }
+.bubble.books .card .role { display: none; }      /* keeps the note short */
+
+/* small doodle arrow under the note, pointing down at the books */
+.bubble.books::before {
+  content: ""; position: absolute; pointer-events: none;
+  left: 50%; right: auto; top: calc(100% + var(--u) * 0.1);
+  width: calc(var(--u) * 2.4); height: calc(var(--u) * 3.2);
+  transform: translateX(-50%);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 40' fill='none' stroke='%23243456' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 3C24 12 7 22 15 36'/%3E%3Cpath d='M15 36L8.5 29M15 36L22 29.5'/%3E%3C/svg%3E") center / contain no-repeat;
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 0.2s ease;
+}
+.bubble.books.open::before { clip-path: inset(0); transition: clip-path 0.35s ease 0.15s; }
+
+/* certificate rows: slim */
+.certs { margin-top: calc(var(--u) * 0.5); opacity: 0; transition: opacity 0.3s ease; }
+.certs.show { opacity: 1; }
+.cert {
+  display: flex; align-items: center; gap: calc(var(--u) * 0.5);
+  margin-top: calc(var(--u) * 0.35);
+  padding: calc(var(--u) * 0.35) calc(var(--u) * 0.5);
+  border-radius: calc(var(--u) * 0.9); background: rgba(36, 52, 86, 0.06);
+  color: var(--ink); text-decoration: none;
+  transition: background 0.2s ease, translate 0.2s ease;
+}
+a.cert:hover, a.cert:focus-visible { background: #fff; translate: 0 calc(var(--u) * -0.12); outline: none; }
+.cert .chipicon { width: calc(var(--u) * 1.6); height: calc(var(--u) * 1.6); border-radius: calc(var(--u) * 0.45); }
+.cert .chiptxt b { font-size: calc(var(--u) * 0.85); }
+.cert .chiptxt small { font-size: calc(var(--u) * 0.65); }
+.cert > svg { flex: none; margin-left: auto; width: calc(var(--u) * 0.8); height: calc(var(--u) * 0.8); fill: none; stroke: var(--gray); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.certs.show .cert { animation: chipIn 0.4s ease both; animation-delay: calc(0.05s + var(--i) * 0.1s); }
+
+/* click the books on the desk to open the certificates again */
+.books-hit {
+  position: absolute; left: 47.6%; top: 47.3%; width: 5%; height: 6.6%;
+  background: none; border: 0; cursor: pointer; pointer-events: none;
+}
+.books-hit.on { pointer-events: auto; }
+
+@media (max-width: 700px) {
+  .bubble.books { --u: calc(var(--w) / 100 * 1.9 * 0.6); left: 4%; top: 6%; bottom: auto; }
+  .bubble.books::before { display: none; }
+}
+
+/* Certificates: straight arrow from the books up to the note, and tighter text in the rows */
+.bubble.books::before {
+  left: 50%; top: calc(100% + var(--u) * 0.2);
+  width: calc(var(--u) * 2.2); height: calc(var(--u) * 4.1);
+  transform: translateX(-50%);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 40' fill='none' stroke='%23243456' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 38V4'/%3E%3Cpath d='M10 3.5L3.5 10.5M10 3.5L16.5 10.5'/%3E%3C/svg%3E") center / contain no-repeat;
+  clip-path: inset(100% 0 0 0);                 /* the arrow draws itself from the books upward */
+}
+.bubble.books.open::before { clip-path: inset(0); }
+
+.cert .chiptxt { display: flex; flex-direction: column; gap: calc(var(--u) * 0.05); }
+.cert .chiptxt b, .cert .chiptxt small { display: block; line-height: 1.15; }
+
+/* Certificates: smaller, thinner arrow, and text sized to match the other notifications */
+.bubble.books::before {
+  left: 50%; top: calc(100% + var(--u) * 1.1);
+  width: calc(var(--u) * 1.5); height: calc(var(--u) * 3);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 40' fill='none' stroke='%23243456' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 38V5'/%3E%3Cpath d='M10 4.5L4.5 10.5M10 4.5L15.5 10.5'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.bubble.books .card { padding: calc(var(--u) * 0.7) calc(var(--u) * 0.9) calc(var(--u) * 0.8); }
+.bubble.books .appicon { width: calc(var(--u) * 1.5); height: calc(var(--u) * 1.5); }
+.bubble.books .appname, .bubble.books .time { font-size: calc(var(--u) * 0.72); }
+.bubble.books .close { width: calc(var(--u) * 1.4); height: calc(var(--u) * 1.4); font-size: calc(var(--u) * 1); }
+.bubble.books .card h1 { font-size: calc(var(--u) * 1); }
+
+.cert { padding: calc(var(--u) * 0.3) calc(var(--u) * 0.5); }
+.cert .chipicon { width: calc(var(--u) * 1.4); height: calc(var(--u) * 1.4); }
+.cert .chiptxt b { font-size: calc(var(--u) * 0.74); font-weight: 500; }
+.cert .chiptxt small { font-size: calc(var(--u) * 0.6); }
+.cert > svg { width: calc(var(--u) * 0.7); height: calc(var(--u) * 0.7); }
+
+/* About + Education: a little lower, so they don't touch the top of the screen */
+@media (min-width: 701px) {
+  .bubble.about { top: 11%; }
+}
+
+/* =====================================================================
+   Clickable objects (after the tour): invisible buttons over the objects,
+   with a small label on hover. To move one, change left / top / width / height.
+   ===================================================================== */
+.hot {
+  position: absolute; background: none; border: 0; padding: 0;
+  border-radius: calc(var(--u) * 0.8); cursor: pointer; pointer-events: none;
+  transition: background 0.2s ease;
+}
+.hot.on { pointer-events: auto; }
+.hot:focus-visible { outline: calc(var(--u) * 0.15) solid var(--green); outline-offset: calc(var(--u) * 0.1); }
+.hot::after {
+  content: attr(data-label);
+  position: absolute; left: 50%; bottom: calc(100% + var(--u) * 0.3);
+  transform: translate(-50%, calc(var(--u) * 0.3));
+  background: var(--ink); color: #fff; white-space: nowrap;
+  padding: calc(var(--u) * 0.25) calc(var(--u) * 0.8); border-radius: 99px;
+  font-size: calc(var(--u) * 0.85); font-weight: 500;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.hot.on:hover::after, .hot.on:focus-visible::after { opacity: 1; transform: translate(-50%, 0); }
+.hot.on:hover { background: rgba(255, 255, 255, 0.16); }
+
+.h-girl    { left: 33.5%; top: 30%;   width: 14%;   height: 64%;   border-radius: calc(var(--u) * 4); }
+.h-girl.on:hover { background: none; }
+.h-frame   { left: 32.9%; top: 15.8%; width: 6.2%;  height: 11.4%; }
+.h-notes   { left: 48.3%; top: 18.3%; width: 18.7%; height: 13.5%; }
+.h-books   { left: 47.6%; top: 47.3%; width: 5%;    height: 6.6%; }
+.h-monitor { left: 52.85%; top: 35.2%; width: 13%;  height: 17.4%; }
+
+/* the phone is clickable too, and shows its "Let's talk" bubble when you hover over it */
+.phone.free { pointer-events: auto; cursor: pointer; }
+.phone.free:hover .p-bubble, .phone.free:focus-visible .p-bubble {
+  opacity: 1; transform: translateX(-50%); pointer-events: auto;
+}
+
+/* hint shown for a few seconds when the tour is over */
+.freehint {
+  position: absolute; left: 50%; bottom: 4%; z-index: 6;
+  transform: translate(-50%, calc(var(--u) * 0.6));
+  padding: calc(var(--u) * 0.5) calc(var(--u) * 1.4); border-radius: 99px;
+  background: var(--card); color: var(--ink); white-space: nowrap;
+  font-size: calc(var(--u) * 0.95); font-weight: 500;
+  box-shadow: 0 calc(var(--u) * 0.4) calc(var(--u) * 1.4) rgba(120, 62, 30, 0.25);
+  opacity: 0; pointer-events: none; transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.freehint.show { opacity: 1; transform: translate(-50%, 0); }
